@@ -1,0 +1,33 @@
+# ---- Logs & run artifacts ----
+*.log
+
+# ---- Scrape mirror (regenerate via scrape-loop.ps1) ----
+/mirror/
+.firecrawl/
+
+# ---- Laravel app (solarshop) ----
+solarshop/vendor/
+solarshop/node_modules/
+solarshop/public/hot
+solarshop/public/build
+solarshop/public/storage
+solarshop/.env
+solarshop/.env.backup
+solarshop/.env.production
+solarshop/storage/*.key
+solarshop/storage/pail
+solarshop/storage/framework/cache/*
+solarshop/storage/framework/sessions/*
+solarshop/storage/framework/views/*
+solarshop/storage/logs/*
+solarshop/.phpunit.result.cache
+solarshop/.phpactor.json
+solarshop/auth.json
+
+# ---- OS / editor noise ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.fleet/
+.zed/
