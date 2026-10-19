@@ -3,7 +3,7 @@ services:
     name: avora-web
     runtime: docker
     dockerfilePath: ./Dockerfile
-    dockerContext: .
+    dockerContext: solarshop
     plan: free
     region: oregon
     envVars:
