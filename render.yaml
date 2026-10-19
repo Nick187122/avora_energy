@@ -5,12 +5,29 @@ services:
     plan: free
     region: oregon
     buildCommand: |
+      # Install Node 20
+      curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+      apt-get install -y nodejs
+      # Build
       composer install --no-dev --optimize-autoloader
-      npm ci && npm run build
+      npm ci --prefer-offline --no-audit
+      npm run build
       php artisan config:cache
       php artisan route:cache
       php artisan view:cache
     startCommand: |
+      # Wait for DB
+      until php -r "
+        \$host = getenv('DB_HOST');
+        \$port = getenv('DB_PORT') ?: 5432;
+        \$timeout = 60;
+        \$start = time();
+        while (time() - \$start < \$timeout) {
+          if (@fsockopen(\$host, \$port, \$errno, \$errstr, 2)) { exit(0); }
+          sleep(1);
+        }
+        exit(1);
+      "; do echo 'Waiting for DB...'; sleep 2; done
       php artisan migrate --force
       php artisan storage:link
       php artisan serve --host=0.0.0.0 --port=$PORT
@@ -29,8 +46,14 @@ services:
         value: database
       - key: DB_CONNECTION
         value: pgsql
+      - key: NODE_VERSION
+        value: "20"
     healthCheckPath: /
     autoDeploy: true
+    # Increase memory for build
+    envVars:
+      - key: COMPOSER_MEMORY_LIMIT
+        value: "-1"
 
 databases:
   - name: avora-db
