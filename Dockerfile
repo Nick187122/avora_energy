@@ -11,10 +11,10 @@ RUN npm run build
 FROM composer:2 AS vendor
 WORKDIR /var/www/html
 COPY solarshop/composer*.json ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts --ignore-platform-req=php
 
 # ---- Runtime Stage ----
-FROM php:8.3-fpm-alpine AS runtime
+FROM php:8.4-fpm-alpine AS runtime
 
 # Install system dependencies
 RUN apk add --no-cache \
