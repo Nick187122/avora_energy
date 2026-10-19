@@ -2,7 +2,7 @@ services:
   - type: web
     name: avora-web
     runtime: docker
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: solarshop/Dockerfile
     dockerContext: solarshop
     plan: free
     region: oregon
