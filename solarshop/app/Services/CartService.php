@@ -80,7 +80,9 @@ class CartService
 
     public function count(): int
     {
-        return array_sum($this->cart());
+        $items = $this->items();
+
+        return array_sum(array_column($items, 'quantity'));
     }
 
     public function subtotal(): float

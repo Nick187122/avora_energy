@@ -37,11 +37,11 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
-    public function getDisplayPriceAttribute(): ?float
+    public function getDisplayPriceAttribute(): float
     {
         $price = $this->sale_price ? (float) $this->sale_price : (float) $this->regular_price;
 
-        return $price > 0 ? $price : null;
+        return $price > 0 ? $price : 0.0;
     }
 
     public function getHasPriceAttribute(): bool

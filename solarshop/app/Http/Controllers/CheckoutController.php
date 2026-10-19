@@ -61,7 +61,7 @@ class CheckoutController extends Controller
 
             foreach ($items as $item) {
                 $product = $item['product'];
-                $price = $product->display_price ?? 0;
+                $price = $product->display_price;
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
