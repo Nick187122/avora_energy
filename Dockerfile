@@ -1,16 +1,16 @@
 # ---- Build Stage: Frontend ----
 FROM node:20-alpine AS frontend
 WORKDIR /app
-COPY package*.json ./
+COPY solarshop/package*.json ./
 RUN npm ci
-COPY vite.config.js ./
-COPY resources ./resources
+COPY solarshop/vite.config.js ./
+COPY solarshop/resources ./resources
 RUN npm run build
 
 # ---- Build Stage: PHP Dependencies ----
 FROM composer:2 AS vendor
 WORKDIR /var/www/html
-COPY composer*.json ./
+COPY solarshop/composer*.json ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
 
 # ---- Runtime Stage ----
@@ -32,8 +32,8 @@ WORKDIR /var/www/html
 # Copy PHP dependencies
 COPY --from=vendor /var/www/html/vendor ./vendor
 
-# Copy application code
-COPY . .
+# Copy application code from solarshop subdirectory
+COPY solarshop/ .
 
 # Copy built frontend assets
 COPY --from=frontend /app/public/build ./public/build
