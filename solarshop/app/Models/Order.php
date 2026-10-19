@@ -31,7 +31,7 @@ class Order extends Model
 
     public static function generateOrderNumber(): string
     {
-        return 'SSA-' . strtoupper(uniqid());
+        return 'SSA-'.strtoupper(uniqid());
     }
 
     public function getStatusBadgeAttribute(): string

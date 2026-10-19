@@ -50,7 +50,7 @@ class AdminUserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', 'unique:admins,email,' . $admin->id],
+            'email' => ['required', 'email', 'max:255', 'unique:admins,email,'.$admin->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:admin,manager'],
             'is_active' => ['sometimes', 'boolean'],

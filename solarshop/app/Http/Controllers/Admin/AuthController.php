@@ -29,11 +29,12 @@ class AuthController extends Controller
 
             if (! $admin->is_active) {
                 Auth::guard('admin')->logout();
+
                 return back()->withErrors(['email' => 'Your account has been deactivated. Contact the system administrator.']);
             }
 
             return redirect()->intended(route('admin.dashboard'))
-                ->with('success', 'Welcome back, ' . $admin->name . '!');
+                ->with('success', 'Welcome back, '.$admin->name.'!');
         }
 
         return back()->withErrors([

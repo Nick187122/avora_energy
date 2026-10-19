@@ -61,11 +61,12 @@ class CheckoutController extends Controller
 
             foreach ($items as $item) {
                 $product = $item['product'];
+                $price = $product->display_price ?? 0;
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
                     'product_name' => $product->name,
-                    'price' => $product->display_price,
+                    'price' => $price,
                     'quantity' => $item['quantity'],
                     'subtotal' => $item['line_total'],
                     'image' => $product->image,

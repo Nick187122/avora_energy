@@ -82,6 +82,7 @@ class BrandController extends Controller
         }
 
         $brand->delete();
+
         return redirect()->route('admin.brands.index')->with('success', 'Brand deleted successfully.');
     }
 }

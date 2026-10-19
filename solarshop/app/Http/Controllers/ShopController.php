@@ -30,7 +30,7 @@ class ShopController extends Controller
         }
 
         $brandSlug = $request->filled('brand') ? $request->get('brand') : $request->route('brand');
-        if ($brandSlug && !$category) {
+        if ($brandSlug && ! $category) {
             $currentBrand = Brand::where('slug', $brandSlug)->first();
             if ($currentBrand) {
                 $query->where('brand_id', $currentBrand->id);
@@ -42,21 +42,11 @@ class ShopController extends Controller
         }
 
         if ($request->filled('min_price')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('sale_price', '>=', $request->get('min_price'))
-                    ->orWhere(function ($q) use ($request) {
-                        $q->whereNull('sale_price')->where('regular_price', '>=', $request->get('min_price'));
-                    });
-            });
+            $query->whereRaw('COALESCE(sale_price, regular_price) >= ?', [$request->get('min_price')]);
         }
 
         if ($request->filled('max_price')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('sale_price', '<=', $request->get('max_price'))
-                    ->orWhere(function ($q) use ($request) {
-                        $q->whereNull('sale_price')->where('regular_price', '<=', $request->get('max_price'));
-                    });
-            });
+            $query->whereRaw('COALESCE(sale_price, regular_price) <= ?', [$request->get('max_price')]);
         }
 
         if ($request->filled('availability') && $request->get('availability') === 'in_stock') {

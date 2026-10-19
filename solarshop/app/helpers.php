@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Setting;
+use App\Services\CartService;
 
 if (! function_exists('setting')) {
     function setting(string $key, $default = null)
@@ -12,7 +13,7 @@ if (! function_exists('setting')) {
 if (! function_exists('money')) {
     function money(float $amount): string
     {
-        return 'KSh ' . number_format($amount, 2);
+        return 'KSh '.number_format($amount, 2);
     }
 }
 
@@ -56,28 +57,28 @@ if (! function_exists('wa_link')) {
     {
         $number = preg_replace('/[^0-9]/', '', wa_number());
 
-        return 'https://wa.me/' . $number . ($message !== '' ? '?text=' . rawurlencode($message) : '');
+        return 'https://wa.me/'.$number.($message !== '' ? '?text='.rawurlencode($message) : '');
     }
 }
 
 if (! function_exists('tel_link')) {
     function tel_link(?string $number = null): string
     {
-        return 'tel:' . preg_replace('/[^0-9+]/', '', $number ?: site_phone());
+        return 'tel:'.preg_replace('/[^0-9+]/', '', $number ?: site_phone());
     }
 }
 
 if (! function_exists('cart_count')) {
     function cart_count(): int
     {
-        return app(\App\Services\CartService::class)->count();
+        return app(CartService::class)->count();
     }
 }
 
 if (! function_exists('cart_subtotal')) {
     function cart_subtotal(): float
     {
-        return app(\App\Services\CartService::class)->subtotal();
+        return app(CartService::class)->subtotal();
     }
 }
 
@@ -89,13 +90,13 @@ if (! function_exists('product_image')) {
         }
 
         $hash = pathinfo($image, PATHINFO_FILENAME);
-        $thumb = 'img/thumbs/' . $hash . '.webp';
+        $thumb = 'img/thumbs/'.$hash.'.webp';
 
         if (is_file(public_path($thumb))) {
             return $thumb;
         }
 
-        $fallback = 'img/thumbs/' . $hash . '.jpg';
+        $fallback = 'img/thumbs/'.$hash.'.jpg';
 
         if (is_file(public_path($fallback))) {
             return $fallback;

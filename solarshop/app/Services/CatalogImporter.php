@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class CatalogImporter
@@ -31,7 +32,7 @@ class CatalogImporter
         $path = storage_path('app/private/seed/all_products.json');
 
         if (! is_file($path)) {
-            throw new \RuntimeException('Products JSON not found at ' . $path);
+            throw new \RuntimeException('Products JSON not found at '.$path);
         }
 
         $data = json_decode((string) file_get_contents($path), true) ?: [];
@@ -63,18 +64,15 @@ class CatalogImporter
 
             $slug = Str::slug((string) ($item['slug'] ?? ''));
             if ($slug === '') {
-                $slug = 'product-' . $i;
+                $slug = 'product-'.$i;
             }
             if (Product::where('slug', $slug)->exists()) {
-                $slug .= '-' . $i;
+                $slug .= '-'.$i;
             }
 
             $sku = $this->resolveSku($item, $i);
 
             $stock = ($item['in_stock'] ?? true) ? (5 + ($i % 20)) : 0;
-            if ($i % 11 === 0) {
-                $stock = 0;
-            }
 
             $regularPrice = (float) ($item['regular_price'] ?? $item['price'] ?? 0);
             $salePrice = ($item['sale_price'] ?? null) !== null ? (float) $item['sale_price'] : null;
@@ -110,7 +108,7 @@ class CatalogImporter
                 'is_featured' => $isFeatured,
                 'is_active' => true,
                 'meta_title' => Str::limit($name, 70),
-                'meta_description' => Str::limit($name . ' - solar products in Kenya with genuine warranty.', 160),
+                'meta_description' => Str::limit($name.' - solar products in Kenya with genuine warranty.', 160),
             ]);
 
             if ($isFeatured) {
@@ -160,11 +158,11 @@ class CatalogImporter
         $first = $categories ? (string) reset($categories) : '';
         $top = $first !== '' ? Str::before($first, '\\') : 'uncategorized';
 
-        return $brand . '|' . ($top === '' ? 'uncategorized' : $top);
+        return $brand.'|'.($top === '' ? 'uncategorized' : $top);
     }
 
     /**
-     * @param  \Illuminate\Support\Collection  $brands  slug => id
+     * @param  Collection  $brands  slug => id
      * @return array{0: int|null, 1: string|null}
      */
     private function resolveBrand(array $item, $brands): array
@@ -195,7 +193,7 @@ class CatalogImporter
     }
 
     /**
-     * @param  \Illuminate\Support\Collection  $categories  slug => id
+     * @param  Collection  $categories  slug => id
      */
     private function resolveCategory(array $item, $categories): ?int
     {
@@ -230,7 +228,7 @@ class CatalogImporter
         $sku = $raw === '' ? null : strtoupper($raw);
 
         if ($sku && Product::where('sku', $sku)->exists()) {
-            $sku .= '-' . $index;
+            $sku .= '-'.$index;
         }
 
         return $sku;
@@ -245,11 +243,11 @@ class CatalogImporter
         $specs = [];
 
         if (preg_match('/\(?(\d+(?:\.\d+)?)\s*kwh\b/i', $name, $m)) {
-            $specs['Storage Capacity'] = $m[1] . ' kWh';
+            $specs['Storage Capacity'] = $m[1].' kWh';
         }
 
         if (preg_match('/\(?(\d+(?:\.\d+)?)\s*(k?w)\b/i', $name, $m)) {
-            $specs['Wattage'] = $m[1] . strtolower($m[2]);
+            $specs['Wattage'] = $m[1].strtolower($m[2]);
         }
 
         if ($brandName !== null && $brandName !== '') {
@@ -269,19 +267,19 @@ class CatalogImporter
      */
     private function buildDescription(string $name, ?string $brandName, string $short, array $specs): string
     {
-        $html = '<p>' . e($name)
-            . ($brandName ? ' from <strong>' . e($brandName) . '</strong>' : '')
-            . ' — available at Avora Energy Solutions at competitive prices with genuine warranty and nationwide delivery.</p>';
+        $html = '<p>'.e($name)
+            .($brandName ? ' from <strong>'.e($brandName).'</strong>' : '')
+            .' — available at Avora Energy Solutions at competitive prices with genuine warranty and nationwide delivery.</p>';
 
         if ($short !== '') {
-            $html .= '<p>' . e($short) . '</p>';
+            $html .= '<p>'.e($short).'</p>';
         }
 
         if ($specs) {
             $rows = collect($specs)
-                ->map(fn ($v, $k) => '<tr><td><strong>' . e($k) . '</strong></td><td>' . e($v) . '</td></tr>')
+                ->map(fn ($v, $k) => '<tr><td><strong>'.e($k).'</strong></td><td>'.e($v).'</td></tr>')
                 ->implode('');
-            $html .= '<p>Key attributes:</p><table class="spec-table"><tbody>' . $rows . '</tbody></table>';
+            $html .= '<p>Key attributes:</p><table class="spec-table"><tbody>'.$rows.'</tbody></table>';
         }
 
         $html .= '<p>Contact us for expert advice, bulk pricing, and installation services.</p>';
@@ -311,7 +309,7 @@ class CatalogImporter
             }
 
             $hash = pathinfo($product->image, PATHINFO_FILENAME);
-            $thumb = $dir . '/' . $hash . '.' . $ext;
+            $thumb = $dir.'/'.$hash.'.'.$ext;
 
             if (is_file($thumb)) {
                 $this->thumbsGenerated++;
@@ -346,7 +344,14 @@ class CatalogImporter
             $crop = imagecreatetruecolor($size, $size);
             imagealphablending($crop, false);
             imagesavealpha($crop, true);
-            $bg = imagecolorallocatealpha($crop, 255, 255, 255, 127);
+
+            if ($supportWebp) {
+                // Preserve transparency for WebP
+                $bg = imagecolorallocatealpha($crop, 255, 255, 255, 127);
+            } else {
+                // Use white background for JPEG
+                $bg = imagecolorallocate($crop, 255, 255, 255);
+            }
             imagefilledrectangle($crop, 0, 0, $size, $size, $bg);
             imagecopy($crop, $resized, 0, 0, $cropX, $cropY, $size, $size);
 

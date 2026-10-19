@@ -18,10 +18,14 @@
         </div>
         <h3><a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a></h3>
         <div class="price-row">
-            @if($product->has_sale)
-                <span class="price"><del>{{ money((float) $product->regular_price) }}</del> <ins>{{ money($product->display_price) }}</ins></span>
+            @if($product->has_price)
+                @if($product->has_sale)
+                    <span class="price"><del>{{ money((float) $product->regular_price) }}</del> <ins>{{ money($product->display_price) }}</ins></span>
+                @else
+                    <span class="price">{{ money($product->display_price) }}</span>
+                @endif
             @else
-                <span class="price">{{ money($product->display_price) }}</span>
+                <span class="price contact-price">{{ $product->price_display_text }}</span>
             @endif
         </div>
         <div class="price-row">

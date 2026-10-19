@@ -145,7 +145,7 @@ class CategorySeeder extends Seeder
                 [
                     'parent_id' => null,
                     'name' => $data['name'],
-                    'description' => 'Shop ' . $data['name'] . ' in Kenya.',
+                    'description' => 'Shop '.$data['name'].' in Kenya.',
                     'image' => $data['image'],
                     'sort_order' => $order++,
                     'is_active' => true,
@@ -158,7 +158,7 @@ class CategorySeeder extends Seeder
                     [
                         'parent_id' => $parent->id,
                         'name' => $childName,
-                        'description' => 'Shop ' . $childName . ' ' . $data['name'] . ' in Kenya.',
+                        'description' => 'Shop '.$childName.' '.$data['name'].' in Kenya.',
                         'image' => null,
                         'sort_order' => 0,
                         'is_active' => true,

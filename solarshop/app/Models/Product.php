@@ -37,9 +37,23 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
-    public function getDisplayPriceAttribute(): float
+    public function getDisplayPriceAttribute(): ?float
     {
-        return $this->sale_price ? (float) $this->sale_price : (float) $this->regular_price;
+        $price = $this->sale_price ? (float) $this->sale_price : (float) $this->regular_price;
+
+        return $price > 0 ? $price : null;
+    }
+
+    public function getHasPriceAttribute(): bool
+    {
+        $price = $this->sale_price ? (float) $this->sale_price : (float) $this->regular_price;
+
+        return $price > 0;
+    }
+
+    public function getPriceDisplayTextAttribute(): string
+    {
+        return $this->has_price ? money($this->display_price) : 'Contact seller for pricing';
     }
 
     public function getHasSaleAttribute(): bool
@@ -49,9 +63,10 @@ class Product extends Model
 
     public function getDiscountPercentAttribute(): int
     {
-        if (! $this->has_sale) {
+        if (! $this->has_sale || (float) $this->regular_price <= 0) {
             return 0;
         }
+
         return (int) round((1 - (float) $this->sale_price / (float) $this->regular_price) * 100);
     }
 

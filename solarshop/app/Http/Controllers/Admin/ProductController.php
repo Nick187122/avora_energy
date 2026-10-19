@@ -9,8 +9,8 @@ use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\View\View;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class ProductController extends Controller
 {
@@ -149,14 +149,14 @@ class ProductController extends Controller
     {
         $product->update(['is_active' => ! $product->is_active]);
 
-        return back()->with('success', "Product status updated.");
+        return back()->with('success', 'Product status updated.');
     }
 
     public function toggleFeatured(Product $product): RedirectResponse
     {
         $product->update(['is_featured' => ! $product->is_featured]);
 
-        return back()->with('success', "Featured status updated.");
+        return back()->with('success', 'Featured status updated.');
     }
 
     protected function validated(Request $request, ?int $ignoreId = null): array

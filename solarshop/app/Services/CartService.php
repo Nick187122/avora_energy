@@ -20,14 +20,19 @@ class CartService
 
         foreach ($cart as $productId => $qty) {
             $product = Product::active()->find($productId);
-            if ($product) {
+            if ($product && $product->has_price) {
                 $items[] = [
                     'product' => $product,
                     'quantity' => $qty,
                     'line_total' => $product->display_price * $qty,
                 ];
+            } else {
+                // Remove invalid items from cart
+                unset($cart[$productId]);
             }
         }
+
+        session([self::KEY => $cart]);
 
         return $items;
     }
@@ -36,6 +41,10 @@ class CartService
     {
         $product = Product::active()->inStock()->find($productId);
         if (! $product) {
+            return false;
+        }
+
+        if (! $product->has_price) {
             return false;
         }
 
@@ -55,7 +64,8 @@ class CartService
         if ($qty <= 0 || ! $product) {
             unset($cart[$productId]);
         } else {
-            $cart[$productId] = min($qty, $product->stock > 0 ? $product->stock : 100);
+            $maxStock = $product->stock > 0 ? $product->stock : 0;
+            $cart[$productId] = min($qty, $maxStock);
         }
 
         session([self::KEY => $cart]);

@@ -40,11 +40,15 @@
                                         </div>
                                     </td>
                                     <td>
-                                        @if($item['product']->has_sale)
-                                            <del style="color:var(--meta);font-size:.8rem;">{{ money((float) $item['product']->regular_price) }}</del>
-                                            <br><span style="color:var(--btn-orange);font-weight:700;">{{ money($item['product']->display_price) }}</span>
+                                        @if($item['product']->has_price)
+                                            @if($item['product']->has_sale)
+                                                <del style="color:var(--meta);font-size:.8rem;">{{ money((float) $item['product']->regular_price) }}</del>
+                                                <br><span style="color:var(--btn-orange);font-weight:700;">{{ money($item['product']->display_price) }}</span>
+                                            @else
+                                                <span style="font-weight:600;">{{ money($item['product']->display_price) }}</span>
+                                            @endif
                                         @else
-                                            <span style="font-weight:600;">{{ money($item['product']->display_price) }}</span>
+                                            <span class="contact-price">{{ $item['product']->price_display_text }}</span>
                                         @endif
                                     </td>
                                     <td>

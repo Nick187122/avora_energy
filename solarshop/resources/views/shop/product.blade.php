@@ -44,11 +44,18 @@
             @endif
 
             <div class="price-block">
-                @if($product->has_sale)
-                    <span class="price"><del>{{ money((float) $product->regular_price) }}</del> <ins>{{ money($product->display_price) }}</ins></span>
-                    <span class="save-tag">Save {{ $product->discount_percent }}%</span>
+                @if($product->has_price)
+                    @if($product->has_sale)
+                        <span class="price"><del>{{ money((float) $product->regular_price) }}</del> <ins>{{ money($product->display_price) }}</ins></span>
+                        <span class="save-tag">Save {{ $product->discount_percent }}%</span>
+                    @else
+                        <span class="price">{{ money($product->display_price) }}</span>
+                    @endif
                 @else
-                    <span class="price">{{ money($product->display_price) }}</span>
+                    <span class="price contact-price">{{ $product->price_display_text }}</span>
+                    @if($product->is_in_stock)
+                        <a href="{{ route('contact.index') }}" class="btn btn-primary btn-sm mt-2">Contact for Pricing</a>
+                    @endif
                 @endif
             </div>
 

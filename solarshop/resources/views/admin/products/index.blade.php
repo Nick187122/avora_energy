@@ -81,11 +81,15 @@
                         <td>{{ $product->category?->name ?? '—' }}</td>
                         <td>{{ $product->brand?->name ?? '—' }}</td>
                         <td>
-                            @if($product->has_sale)
-                                <del class="text-muted" style="font-size:.8rem;">{{ money((float) $product->regular_price) }}</del>
-                                <div style="color:var(--a-btn);font-weight:700;">{{ money($product->display_price) }}</div>
+                            @if($product->has_price)
+                                @if($product->has_sale)
+                                    <del class="text-muted" style="font-size:.8rem;">{{ money((float) $product->regular_price) }}</del>
+                                    <div style="color:var(--a-btn);font-weight:700;">{{ money($product->display_price) }}</div>
+                                @else
+                                    {{ money($product->display_price) }}
+                                @endif
                             @else
-                                {{ money($product->display_price) }}
+                                <span class="contact-price">{{ $product->price_display_text }}</span>
                             @endif
                         </td>
                         <td>
