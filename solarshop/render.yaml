@@ -1,0 +1,42 @@
+services:
+  - type: web
+    name: avora-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+    healthCheckPath: /
+    autoDeploy: true
+
+  - type: pserv
+    name: avora-db
+    plan: free
+    region: oregon
+    postgresMajorVersion: "16"
+    envVars:
+      - key: POSTGRES_DB
+        value: avora
+      - key: POSTGRES_USER
+        generateValue: true
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+
+databases:
+  - name: avora-db
+    plan: free
+    region: oregon
+    postgresMajorVersion: "16"
