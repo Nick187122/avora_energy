@@ -1,0 +1,23 @@
+.git
+.gitignore
+
+# Local env / secrets — never bake these into the image
+solarshop/.env
+solarshop/.env.*
+solarshop/auth.json
+
+# Build artifacts that only exist on the host (Render clones a clean repo,
+# but these would overwrite the properly built vendor/node_modules stages)
+solarshop/node_modules
+solarshop/vendor
+solarshop/public/build
+solarshop/public/hot
+solarshop/public/storage
+solarshop/bootstrap/cache/*.php
+solarshop/database/*.sqlite*
+solarshop/storage/logs/*.log
+solarshop/.phpunit.result.cache
+
+# Scrape workspace (not part of the app)
+mirror
+.firecrawl

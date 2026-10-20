@@ -39,9 +39,9 @@ COPY solarshop/ .
 # Copy built frontend assets
 COPY --from=frontend /app/public/build ./public/build
 
-# Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+# Set permissions (public/img needs to be writable for thumbnail regeneration)
+RUN chown -R www-data:www-data storage bootstrap/cache public/img \
+    && chmod -R 775 storage bootstrap/cache public/img
 
 # Create Caddy directory and config
 RUN mkdir -p /etc/caddy /run/php-fpm
@@ -49,11 +49,10 @@ RUN mkdir -p /etc/caddy /run/php-fpm
 # Copy Caddyfile
 COPY Caddyfile /etc/caddy/Caddyfile
 
-# PHP-FPM config for socket
-RUN echo "listen = /run/php-fpm.sock" > /usr/local/etc/php-fpm.d/zz-render.conf \
-    && echo "listen.owner = www-data" >> /usr/local/etc/php-fpm.d/zz-render.conf \
-    && echo "listen.group = www-data" >> /usr/local/etc/php-fpm.d/zz-render.conf \
-    && echo "listen.mode = 0660" >> /usr/local/etc/php-fpm.d/zz-render.conf
+# PHP-FPM config: listen on a unix socket for Caddy (explicit [www] section so
+# the directives are guaranteed to apply to the pool, not the global section)
+RUN printf '[www]\nlisten = /run/php-fpm.sock\nlisten.owner = www-data\nlisten.group = www-data\nlisten.mode = 0660\n' \
+    > /usr/local/etc/php-fpm.d/zz-render.conf
 
 EXPOSE 80 443
 

@@ -1,2 +1,7 @@
 *
 !.gitignore
+!seed/
+!seed/**
+seed/images_manifest.json
+seed/store_products_raw.json
+

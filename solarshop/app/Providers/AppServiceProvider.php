@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Render terminates TLS at the proxy, so the app always sees plain HTTP.
+        // Force https for generated URLs to avoid mixed-content issues.
+        if ($this->app->isProduction()) {
+            URL::forceScheme('https');
+        }
     }
 }

@@ -1,0 +1,55 @@
+services:
+  - type: web
+    name: avora-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    branch: master
+    plan: free
+    region: oregon
+    healthCheckPath: /up
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: https://avora-energy.onrender.com
+      - key: APP_KEY
+        generateValue: true
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: avora-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: avora-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: avora-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: avora-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: avora-db
+          property: password
+
+databases:
+  - name: avora-db
+    plan: free
+    region: oregon
