@@ -30,26 +30,26 @@ services:
         value: pgsql
       - key: DB_HOST
         fromDatabase:
-          name: avora-db
+          name: "avora energy.db"
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: avora-db
+          name: "avora energy.db"
           property: port
       - key: DB_DATABASE
         fromDatabase:
-          name: avora-db
+          name: "avora energy.db"
           property: database
       - key: DB_USERNAME
         fromDatabase:
-          name: avora-db
+          name: "avora energy.db"
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: avora-db
+          name: "avora energy.db"
           property: password
 
 databases:
-  - name: avora-db
+  - name: "avora energy.db"
     plan: free
     region: oregon
