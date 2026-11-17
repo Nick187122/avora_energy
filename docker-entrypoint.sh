@@ -28,12 +28,13 @@ export APP_KEY="$(php -r '
 ')"
 
 # ---------------------------------------------------------------------------
-# Wait for the database (bounded - fail loudly instead of looping forever).
+# Wait for the database. Free Postgres cold starts can exceed 60s, so allow
+# up to ~3 minutes before giving up.
 # ---------------------------------------------------------------------------
 echo "Waiting for database at ${DB_HOST:-127.0.0.1}:${DB_PORT:-5432} (connection: ${DB_CONNECTION:-<unset>})..."
 db_ready=0
 tries=0
-while [ "$tries" -lt 30 ]; do
+while [ "$tries" -lt 90 ]; do
     if php -r 'if (@fsockopen(getenv("DB_HOST") ?: "127.0.0.1", (int) (getenv("DB_PORT") ?: 5432), $e, $m, 2)) { exit(0); } exit(1);'; then
         db_ready=1
         break
@@ -43,7 +44,7 @@ while [ "$tries" -lt 30 ]; do
 done
 
 if [ "$db_ready" != "1" ]; then
-    echo "ERROR: database is unreachable after 60s. Current configuration:"
+    echo "ERROR: database is unreachable after ~180s. Current configuration:"
     echo "  DB_CONNECTION=${DB_CONNECTION:-<unset>}"
     echo "  DB_HOST=${DB_HOST:-<unset>}"
     echo "  DB_PORT=${DB_PORT:-<unset>}"
@@ -52,11 +53,23 @@ if [ "$db_ready" != "1" ]; then
     exit 1
 fi
 
-# Run migrations
+# Run migrations (must succeed or the app cannot serve traffic)
 echo "Running migrations..."
 php artisan migrate --force --no-interaction
 
-# Seed on first boot only (skip once the admins table has rows)
+# Cache configuration, routes and views BEFORE seeding so the first web
+# request does not pay the cache-build cost.
+echo "Caching configuration..."
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Storage link
+php artisan storage:link 2>/dev/null || true
+
+# ---------------------------------------------------------------------------
+# Decide whether seeding is needed. Exit 0 => seed, exit 1 => already seeded.
+# ---------------------------------------------------------------------------
 seed_needed() {
     php -r '
         require "vendor/autoload.php";
@@ -69,26 +82,32 @@ seed_needed() {
         }'
 }
 
+needs_seed=0
 if seed_needed; then
-    echo "Empty database detected - seeding initial data..."
-    php artisan db:seed --force --no-interaction
-else
-    echo "Database already seeded - skipping."
+    needs_seed=1
 fi
 
-# Cache configuration, routes and views
-echo "Caching configuration..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# Storage link
-php artisan storage:link 2>/dev/null || true
-
-# Start PHP-FPM in background
+# ---------------------------------------------------------------------------
+# Start PHP-FPM + Caddy FIRST so Render's health check (/up) can pass while
+# the (slow) first-boot seed runs in the background. Free tier has only
+# 0.1 CPU; importing ~1400 products can take several minutes and would
+# otherwise blow the health-check window and kill the deploy.
+# ---------------------------------------------------------------------------
 echo "Starting php-fpm..."
 php-fpm -D
 
-# Start Caddy (foreground)
 echo "Starting Caddy on port ${PORT}..."
-exec caddy run --config /etc/caddy/Caddyfile
+caddy run --config /etc/caddy/Caddyfile &
+CADDY_PID=$!
+
+if [ "$needs_seed" = "1" ]; then
+    echo "Empty database detected - seeding initial data in the background..."
+    (
+        php artisan db:seed --force --no-interaction \
+            && echo "SEED_OK: initial data seeded." \
+            || echo "SEED_FAILED: seeding errored - re-run with: php artisan db:seed --force"
+    ) &
+fi
+
+# Keep the container in the foreground as long as Caddy is alive.
+wait "$CADDY_PID"

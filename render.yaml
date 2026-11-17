@@ -28,6 +28,7 @@ services:
         value: database
       - key: DB_CONNECTION
         value: pgsql
+      # Internal Render Postgres hostname (same region/workspace).
       - key: DB_HOST
         fromDatabase:
           name: "avora energy.db"
@@ -48,6 +49,10 @@ services:
         fromDatabase:
           name: "avora energy.db"
           property: password
+      # Internal connections use self-signed certs; "prefer" tries TLS then
+      # falls back to plaintext on the private network (Render's guidance).
+      - key: DB_SSLMODE
+        value: prefer
 
 databases:
   - name: "avora energy.db"
