@@ -23,19 +23,21 @@ echo "  APP_ENV       = ${APP_ENV:-<unset>}"
 echo "========================="
 
 # ---------------------------------------------------------------------------
-# Validate that DB_CONNECTION is set and is a supported driver.
-# If Render's fromDatabase injection failed, the value will be empty or wrong.
+# DB_CONNECTION: Render's dashboard may have an old stale value of 'database'
+# (set manually before render.yaml existed). If DB_HOST is already populated
+# by the fromDatabase injection, we know it IS PostgreSQL — fix it silently.
+# Only hard-fail if DB_HOST is also missing (injection completely failed).
 # ---------------------------------------------------------------------------
-if [ -z "$DB_CONNECTION" ] || [ "$DB_CONNECTION" = "database" ]; then
-    echo "ERROR: DB_CONNECTION is '${DB_CONNECTION:-<empty>}'. Expected 'pgsql'."
-    echo "Check that the Render environment variables are set correctly in the dashboard."
+if [ -z "$DB_HOST" ]; then
+    echo "ERROR: DB_HOST is not set. The fromDatabase env var injection may have failed."
+    echo "Ensure the Postgres service name in render.yaml exactly matches the service in the Render dashboard."
     exit 1
 fi
 
-if [ -z "$DB_HOST" ]; then
-    echo "ERROR: DB_HOST is not set. The fromDatabase env var injection may have failed."
-    echo "Ensure the Postgres service name in render.yaml exactly matches the service in your Render dashboard."
-    exit 1
+if [ -z "$DB_CONNECTION" ] || [ "$DB_CONNECTION" != "pgsql" ]; then
+    echo "WARNING: DB_CONNECTION is '${DB_CONNECTION:-<empty>}' but DB_HOST is set — auto-correcting to 'pgsql'."
+    echo "To fix permanently: set DB_CONNECTION=pgsql in the Render dashboard under avora-web > Environment."
+    export DB_CONNECTION=pgsql
 fi
 
 # ---------------------------------------------------------------------------
