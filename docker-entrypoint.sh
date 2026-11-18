@@ -11,6 +11,34 @@ if [ "$PORT" != "80" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Dump all DB-related env vars for debugging (safe — no password printed).
+# ---------------------------------------------------------------------------
+echo "=== Environment check ==="
+echo "  DB_CONNECTION = ${DB_CONNECTION:-<unset>}"
+echo "  DB_HOST       = ${DB_HOST:-<unset>}"
+echo "  DB_PORT       = ${DB_PORT:-5432}"
+echo "  DB_DATABASE   = ${DB_DATABASE:-<unset>}"
+echo "  DB_USERNAME   = ${DB_USERNAME:-<unset>}"
+echo "  APP_ENV       = ${APP_ENV:-<unset>}"
+echo "========================="
+
+# ---------------------------------------------------------------------------
+# Validate that DB_CONNECTION is set and is a supported driver.
+# If Render's fromDatabase injection failed, the value will be empty or wrong.
+# ---------------------------------------------------------------------------
+if [ -z "$DB_CONNECTION" ] || [ "$DB_CONNECTION" = "database" ]; then
+    echo "ERROR: DB_CONNECTION is '${DB_CONNECTION:-<empty>}'. Expected 'pgsql'."
+    echo "Check that the Render environment variables are set correctly in the dashboard."
+    exit 1
+fi
+
+if [ -z "$DB_HOST" ]; then
+    echo "ERROR: DB_HOST is not set. The fromDatabase env var injection may have failed."
+    echo "Ensure the Postgres service name in render.yaml exactly matches the service in your Render dashboard."
+    exit 1
+fi
+
+# ---------------------------------------------------------------------------
 # APP_KEY: Laravel requires a 32-byte key. Render's generateValue produces a
 # raw base64 string; Laravel expects the "base64:" prefix, so normalise it.
 # ---------------------------------------------------------------------------
@@ -31,7 +59,7 @@ export APP_KEY="$(php -r '
 # Wait for the database. Free Postgres cold starts can exceed 60s, so allow
 # up to ~3 minutes before giving up.
 # ---------------------------------------------------------------------------
-echo "Waiting for database at ${DB_HOST:-127.0.0.1}:${DB_PORT:-5432} (connection: ${DB_CONNECTION:-<unset>})..."
+echo "Waiting for database at ${DB_HOST}:${DB_PORT:-5432}..."
 db_ready=0
 tries=0
 while [ "$tries" -lt 90 ]; do
@@ -52,6 +80,16 @@ if [ "$db_ready" != "1" ]; then
     echo "  DB_USERNAME=${DB_USERNAME:-<unset>}"
     exit 1
 fi
+
+echo "Database is reachable. Proceeding..."
+
+# ---------------------------------------------------------------------------
+# Clear any stale config cache that might have been baked into a prior image
+# layer. This MUST run before migrate so Laravel reads live env vars.
+# ---------------------------------------------------------------------------
+echo "Clearing config cache..."
+php artisan config:clear
+php artisan cache:clear 2>/dev/null || true
 
 # Run migrations (must succeed or the app cannot serve traffic)
 echo "Running migrations..."

@@ -31,30 +31,33 @@ services:
       # Internal Render Postgres hostname (same region/workspace).
       - key: DB_HOST
         fromDatabase:
-          name: "avora energy.db"
+          name: avora-db
           property: host
       - key: DB_PORT
         fromDatabase:
-          name: "avora energy.db"
+          name: avora-db
           property: port
       - key: DB_DATABASE
         fromDatabase:
-          name: "avora energy.db"
+          name: avora-db
           property: database
       - key: DB_USERNAME
         fromDatabase:
-          name: "avora energy.db"
+          name: avora-db
           property: user
       - key: DB_PASSWORD
         fromDatabase:
-          name: "avora energy.db"
+          name: avora-db
           property: password
       # Internal connections use self-signed certs; "prefer" tries TLS then
       # falls back to plaintext on the private network (Render's guidance).
       - key: DB_SSLMODE
         value: prefer
+      # Also set PGSSLMODE for the libpq layer used by pdo_pgsql
+      - key: PGSSLMODE
+        value: prefer
 
 databases:
-  - name: "avora energy.db"
+  - name: avora-db
     plan: free
     region: oregon
