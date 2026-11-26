@@ -52,5 +52,5 @@ services:
         value: "faithdoyin3@gmail.com"
       - key: MAIL_FROM_NAME
         value: "Avora Energy Solutions"
-      - key: PGSSLMODE
+      - key: DB_SSLMODE
         value: require
