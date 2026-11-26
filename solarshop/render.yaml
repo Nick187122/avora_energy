@@ -1,0 +1,56 @@
+# Render Blueprint — Avora Energy Solutions
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: avora-energy
+    runtime: docker
+    region: oregon           # Change to: frankfurt, singapore, ohio, oregon, virginia
+    plan: free               # Change to: starter ($7/mo) for production uptime
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_NAME
+        value: "Avora Energy Solutions"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_URL
+        value: https://avora-energy.onrender.com
+      - key: APP_KEY
+        generateValue: true  # Render auto-generates a secure key
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: error
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_DATABASE
+        value: postgres
+      - key: DB_HOST
+        sync: false           # You will fill this in Render dashboard
+      - key: DB_USERNAME
+        sync: false           # You will fill this in Render dashboard
+      - key: DB_PASSWORD
+        sync: false           # You will fill this in Render dashboard
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_LIFETIME
+        value: "120"
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: MAIL_MAILER
+        value: log
+      - key: MAIL_FROM_ADDRESS
+        value: "faithdoyin3@gmail.com"
+      - key: MAIL_FROM_NAME
+        value: "Avora Energy Solutions"
+      - key: PGSSLMODE
+        value: require
